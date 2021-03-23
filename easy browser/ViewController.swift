@@ -11,7 +11,7 @@ import WebKit
 class ViewController: UIViewController, WKNavigationDelegate {
     var webView: WKWebView!
     var progressView: UIProgressView!
-    var websites = ["apple.com","clawsnpaws.org"]
+    var websites = ["apple.com", "clawsnpaws.org", "aswresr.sec"]
 
     override func loadView() {
         webView = WKWebView()
@@ -26,12 +26,14 @@ class ViewController: UIViewController, WKNavigationDelegate {
 
         let spacer = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
         let refresh = UIBarButtonItem(barButtonSystemItem: .refresh, target: webView, action: #selector(webView.reload))
+        let back = UIBarButtonItem(title: "⬅️", style: .plain, target: webView, action: #selector(webView.goBack))
+        let forward = UIBarButtonItem(title: "➡️", style: .plain, target: webView, action: #selector(webView.goForward))
 
         progressView = UIProgressView(progressViewStyle: .default)
         progressView.sizeToFit()
         let progressButton = UIBarButtonItem(customView: progressView)
 
-        toolbarItems = [progressButton, spacer, refresh]
+        toolbarItems = [back, forward, spacer, progressButton, spacer, refresh]
         navigationController?.isToolbarHidden = false
 
         webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
@@ -43,11 +45,11 @@ class ViewController: UIViewController, WKNavigationDelegate {
 
     @objc func openTapped() {
         let ac = UIAlertController(title: "open page...", message: nil, preferredStyle: .actionSheet)
-        
+
         for website in websites {
             ac.addAction(UIAlertAction(title: website, style: .default, handler: openPage))
         }
-    
+
         ac.addAction(UIAlertAction(title: "cancel", style: .cancel))
         ac.popoverPresentationController?.barButtonItem = navigationItem.rightBarButtonItem
         present(ac, animated: true)
@@ -67,19 +69,23 @@ class ViewController: UIViewController, WKNavigationDelegate {
             progressView.progress = Float(webView.estimatedProgress)
         }
     }
-    
+
     func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
         let url = navigationAction.request.url
-        
+
         if let host = url?.host {
             for website in websites {
-                if host.contains(website){
+                if host.contains(website) {
                     decisionHandler(.allow)
                     return
+                } else {
+                    let ac = UIAlertController(title: "Warning !", message: "Website is not Allowed !", preferredStyle: .alert)
+                    ac.addAction(UIAlertAction(title: "Close", style: .cancel))
+                    present(ac, animated: true)
                 }
             }
         }
-        
+
         decisionHandler(.cancel)
     }
 }
